@@ -36,11 +36,13 @@ spec:
   }
 
   environment {
-    IMAGE_REPO     = "harbor.local/demo/nginx-sample"
-    GIT_URL        = "https://github.com/moojin97/GitOps-demo.git"
-    GIT_USER_NAME  = "moojin97"
-    GIT_USER_EMAIL = "you@example.com"
-  }
+  IMAGE_REPO     = "harbor.local/demo/nginx-sample"
+  GIT_URL        = "https://github.com/moojin97/GitOps-demo.git"
+  GIT_USER_NAME  = "moojin97"
+  GIT_USER_EMAIL = "you@example.com"
+
+  DOCKER_CONFIG  = "/kaniko/.docker"   // ★ 반드시 추가
+}
 
   stages {
     stage('Checkout') {
