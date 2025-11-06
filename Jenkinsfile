@@ -7,13 +7,21 @@ apiVersion: v1
 kind: Pod
 spec:
   serviceAccountName: default
+
+  # harbor.local 을 192.168.25.100 으로 고정 해석 (파드 /etc/hosts 주입)
+  hostAliases:
+  - ip: "192.168.25.100"
+    hostnames:
+    - "harbor.local"
+
   containers:
   - name: kaniko
-    image: gcr.io/kaniko-project/executor:debug   # debug 이미지(BusyBox 포함)
-    command: ["/busybox/sh","-c","sleep 999999"]  # BusyBox 쉘로 대기
+    image: gcr.io/kaniko-project/executor:debug   # BusyBox 포함 이미지
+    command: ["/busybox/sh","-c","sleep 999999"]  # 대기 (stage에서 sh 실행)
     volumeMounts:
     - name: docker-config
       mountPath: /kaniko/.docker
+
   volumes:
   - name: docker-config
     projected:
@@ -28,6 +36,7 @@ spec:
   }
 
   environment {
+    // 레지스트리/레포 (TLS SNI는 harbor.local, 실주소는 hostAliases로 매핑)
     IMAGE_REPO     = "harbor.local/demo/nginx-sample"
     GIT_URL        = "https://github.com/moojin97/GitOps-demo.git"
     GIT_USER_NAME  = "moojin97"
@@ -61,6 +70,7 @@ spec:
           set -e
           TAG=$(cat .last_tag)
           V=helm/nginx-sample/values.yaml
+          # tag 줄만 안전 치환
           sed -i "s/^\\s*tag:\\s*.*/  tag: \\"$TAG\\"/" $V
           git config user.name  "${GIT_USER_NAME}"
           git config user.email "${GIT_USER_EMAIL}"
